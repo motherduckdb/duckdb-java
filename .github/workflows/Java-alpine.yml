@@ -63,11 +63,3 @@ jobs:
         with:
           name: java-alpine-amd64
           path: build/release/duckdb_jdbc.jar
-
-      # Optional: Deploy step (commented out, adjust as needed)
-      # - name: Deploy to Staging
-      #   env:
-      #     AWS_ACCESS_KEY_ID: ${{ secrets.S3_DUCKDB_STAGING_ID }}
-      #     AWS_SECRET_ACCESS_KEY: ${{ secrets.S3_DUCKDB_STAGING_KEY }}
-      #   run: |
-      #     # Deployment script or commands

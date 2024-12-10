@@ -1,20 +1,20 @@
 name: DuckDB-JDBC Alpine Compilation
 
 on:
-  workflow_dispatch:  # Allow manual triggering
+  workflow_dispatch:  
   push:
     branches: [ main ]
   pull_request:
 
 jobs:
-  java-linux-alpine:
+  java-alpine-amd64:
     name: Java Linux (Alpine x86_64)
     runs-on: ubuntu-latest
     container:
-      image: alpine:latest  # Use the Alpine container from your Dockerfile
+      image: alpine:latest 
     env:
       GEN: ninja
-      DUCKDB_PLATFORM: alpine_amd64
+      DUCKDB_PLATFORM: linux_amd64
     
     steps:
       - name: Prepare Alpine Container
@@ -50,6 +50,8 @@ jobs:
         run: |
           # Add any specific build commands for DuckDB-JDBC
           # This might need adjustment based on your specific build process
+          echo $CFLAGS
+          echo $CXXFLAGS
           make release
 
       - name: Package JDBC Artifact
@@ -59,8 +61,8 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: duckdb-jdbc-alpine-x86_64
-          path: duckdb_jdbc-linux-alpine-x86_64.jar
+          name: java-alpine-amd64
+          path: build/release/duckdb_jdbc.jar
 
       # Optional: Deploy step (commented out, adjust as needed)
       # - name: Deploy to Staging

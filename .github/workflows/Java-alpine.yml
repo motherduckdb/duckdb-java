@@ -36,11 +36,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Verify Alpine Detection
-        run: |
-          cat /etc/os-release
-          cmake -P alpine_detect.cmake  # A small CMake script to print detection result
-
       - name: Set Compiler Flags (Optional)
         run: |
           echo "CXXFLAGS=-Wno-stringop-overflow -Wno-return-local-addr -DICU_DISABLE_WARNINGS" >> $GITHUB_ENV

@@ -95,7 +95,6 @@ option(STATIC_LIBCPP "Statically link C++ standard library" OFF)
 is_alpine_linux(IS_ALPINE)
 if(IS_ALPINE)
   set(STATIC_LIBCPP ON CACHE BOOL "Automatically enabled static linking for Alpine" FORCE)
-  set(OS_ARCH "alpine")
   message(STATUS "Detected Alpine Linux - Enabling static C++ library linking")
 endif()
 

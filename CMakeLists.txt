@@ -38,7 +38,6 @@ else()
   set(CMAKE_C_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
 endif()
 
-
 set(OS_NAME "unknown")
 set(OS_ARCH "amd64")
 
@@ -65,10 +64,44 @@ if(OVERRIDE_JDBC_OS_ARCH)
   set(OS_ARCH ${OVERRIDE_JDBC_OS_ARCH})
 endif()
 
+
+# Function to check if the current system is Alpine Linux
+function(is_alpine_linux RESULT)
+  if(UNIX AND NOT APPLE)
+    # Read the contents of /etc/os-release if it exists
+    if(EXISTS "/etc/os-release")
+      file(READ "/etc/os-release" OS_RELEASE_CONTENTS)
+      
+      # Check if the contents contain "Alpine Linux"
+      string(FIND "${OS_RELEASE_CONTENTS}" "Alpine Linux" ALPINE_FOUND)
+      
+      if(ALPINE_FOUND GREATER -1)
+        set(${RESULT} TRUE PARENT_SCOPE)
+      else()
+        set(${RESULT} FALSE PARENT_SCOPE)
+      endif()
+    else()
+      set(${RESULT} FALSE PARENT_SCOPE)
+    endif()
+  else()
+    set(${RESULT} FALSE PARENT_SCOPE)
+  endif()
+endfunction()
+
+# Option to force static libcpp
+option(STATIC_LIBCPP "Statically link C++ standard library" OFF)
+
+# Automatically detect and set STATIC_LIBCPP for Alpine
+is_alpine_linux(IS_ALPINE)
+if(IS_ALPINE)
+  set(STATIC_LIBCPP ON CACHE BOOL "Automatically enabled static linking for Alpine" FORCE)
+  message(STATUS "Detected Alpine Linux - Enabling static C++ library linking")
+endif()
+
+
 add_jar(duckdb_jdbc ${JAVA_SRC_FILES} META-INF/services/java.sql.Driver
         GENERATE_NATIVE_HEADERS duckdb-native)
 add_jar(duckdb_jdbc_tests ${JAVA_TEST_FILES} INCLUDE_JARS duckdb_jdbc)
-
 
 
 set(DUCKDB_SYSTEM_LIBS ${CMAKE_DL_LIBS})
@@ -81,6 +114,11 @@ add_library(duckdb_java SHARED src/jni/duckdb_java.cpp src/jni/functions.cpp ${D
 target_compile_options(duckdb_java PRIVATE -fexceptions)
 target_link_libraries(duckdb_java duckdb-native )
 target_link_libraries(duckdb_java ${DUCKDB_SYSTEM_LIBS})
+
+if(STATIC_LIBCPP)
+  message("Statically linking C++ standard library")
+  target_link_libraries(duckdb_java -static-libstdc++ -static-libgcc)
+endif()
 
 string(JOIN "_" LIB_SUFFIX ".so" ${OS_NAME} ${OS_ARCH})
 set_target_properties(duckdb_java PROPERTIES SUFFIX ${LIB_SUFFIX})
